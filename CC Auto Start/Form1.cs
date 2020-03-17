@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -18,6 +19,10 @@ namespace CC_Auto_Start
         public string ccLocation;
         XmlDocument xmlDoc = new XmlDocument();
         List<Game> games = new List<Game>();
+
+        [DllImport("user32.dll")]
+        static extern bool SetForegroundWindow(IntPtr hWnd);
+
 
         public class Game
         {
@@ -84,14 +89,7 @@ namespace CC_Auto_Start
             }
 
             if (!GameIsRunning() && CCIsRunning())
-            {
-                Process[] processes = Process.GetProcessesByName("CrewChiefV4");
-
-                foreach (Process p in processes)
-                {
-                    p.Kill();
-                }
-            }
+                Process.Start(ccLocation, "C_EXIT");
         }
 
         private bool GameIsRunning()

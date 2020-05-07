@@ -1,0 +1,9 @@
+﻿V1.1
+Updated command line parameters to work with Crew Chief 4.11.1.2:
+	Comes with a updated xml file with the new game parameters but if you added more games you will have to update those from "game" to "-game". E.g "RF2" to "-RF2"
+New notification icon controls:
+	Left click to enable/disable the application
+	Rightclick to bring up the contex menu
+-----------------------------------------------------------------------------------------------
+V1.0
+Initial release

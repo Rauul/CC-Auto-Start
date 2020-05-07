@@ -89,7 +89,7 @@ namespace CC_Auto_Start
             }
 
             if (!GameIsRunning() && CCIsRunning())
-                Process.Start(ccLocation, "C_EXIT");
+                Process.Start(ccLocation, "-c_exit");
         }
 
         private bool GameIsRunning()
@@ -112,17 +112,29 @@ namespace CC_Auto_Start
         {
             if (e.Button == MouseButtons.Left)
             {
-                if (WindowState == FormWindowState.Minimized)
+                if (timer1.Enabled)
                 {
-                    this.Show();
-                    WindowState = FormWindowState.Normal;
+                    notifyIcon1.Icon = Properties.Resources.icon_off;
+                    pauseButton.Text = "Enable";
+                    timer1.Stop();
                 }
+                else
+                {
+                    notifyIcon1.Icon = Properties.Resources.icon_on;
+                    pauseButton.Text = "Disable";
+                    timer1.Start();
+                }
+                //if (WindowState == FormWindowState.Minimized)
+                //{
+                //    this.Show();
+                //    WindowState = FormWindowState.Normal;
+                //}
 
-                else if (WindowState == FormWindowState.Normal)
-                {
-                    this.Hide();
-                    WindowState = FormWindowState.Minimized;
-                }
+                //else if (WindowState == FormWindowState.Normal)
+                //{
+                //    this.Hide();
+                //    WindowState = FormWindowState.Minimized;
+                //}
             }
         }
 

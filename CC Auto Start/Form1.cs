@@ -1,14 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -16,13 +9,11 @@ namespace CC_Auto_Start
 {
     public partial class Form1 : Form
     {
-        public string ccLocation;
+        ProcessStartInfo processStartInfo = new ProcessStartInfo();
         XmlDocument xmlDoc = new XmlDocument();
         List<Game> games = new List<Game>();
-
-        [DllImport("user32.dll")]
-        static extern bool SetForegroundWindow(IntPtr hWnd);
-
+        string exitArgument = "-c_exit";
+        bool iStartedIt = false;
 
         public class Game
         {
@@ -52,11 +43,13 @@ namespace CC_Auto_Start
             try
             {
                 xmlDoc.Load("CC Auto Start.xml");
+
                 XmlNode node = xmlDoc.DocumentElement.SelectSingleNode("/Config/CCLocation");
-                ccLocation = node.InnerText;
-                if (!File.Exists(ccLocation))
+                processStartInfo.FileName = node.InnerText;
+
+                if (!File.Exists(processStartInfo.FileName))
                 {
-                    MessageBox.Show("'" + ccLocation + "' could not be found." + "\n\nEdit the config file and restart the application." + "\nClosing...", "Whoopsie", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("'" + processStartInfo.FileName + "' could not be found." + "\n\nEdit the config file and restart the application." + "\nClosing...", "Whoopsie", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     Application.Exit();
                 }
                 node = xmlDoc.DocumentElement.SelectSingleNode("/Config/Games");
@@ -68,7 +61,7 @@ namespace CC_Auto_Start
                 }
             }
             catch (Exception e)
-            { 
+            {
                 MessageBox.Show(e.Message + "\n\nExiting the application.", "Whoopsie", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 Application.Exit();
             }
@@ -82,14 +75,20 @@ namespace CC_Auto_Start
                 {
                     if (Process.GetProcessesByName(game.processName).Length != 0)
                     {
-                        Process.Start(ccLocation, game.parameter);
+                        processStartInfo.Arguments = game.parameter;
+                        Process.Start(processStartInfo);
+                        iStartedIt = true;
                         break;
                     }
                 }
             }
 
-            if (!GameIsRunning() && CCIsRunning())
-                Process.Start(ccLocation, "-c_exit");
+            if (!GameIsRunning() && CCIsRunning() && iStartedIt)
+            {
+                processStartInfo.Arguments = exitArgument;
+                Process.Start(processStartInfo);
+                iStartedIt = false;
+            }
         }
 
         private bool GameIsRunning()
@@ -108,36 +107,6 @@ namespace CC_Auto_Start
             return (Process.GetProcessesByName("CrewChiefV4").Length != 0);
         }
 
-        private void NotifyIcon1_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                if (timer1.Enabled)
-                {
-                    notifyIcon1.Icon = Properties.Resources.icon_off;
-                    pauseButton.Text = "Enable";
-                    timer1.Stop();
-                }
-                else
-                {
-                    notifyIcon1.Icon = Properties.Resources.icon_on;
-                    pauseButton.Text = "Disable";
-                    timer1.Start();
-                }
-                //if (WindowState == FormWindowState.Minimized)
-                //{
-                //    this.Show();
-                //    WindowState = FormWindowState.Normal;
-                //}
-
-                //else if (WindowState == FormWindowState.Normal)
-                //{
-                //    this.Hide();
-                //    WindowState = FormWindowState.Minimized;
-                //}
-            }
-        }
-
         private void timer1_Tick(object sender, EventArgs e)
         {
             Work();
@@ -148,29 +117,26 @@ namespace CC_Auto_Start
             Application.Exit();
         }
 
-        private void pauseButton_Click(object sender, EventArgs e)
-        {
-            if (timer1.Enabled)
-            {
-                pauseButton.Text = "Enable";
-                timer1.Stop();
-            }
-            else
-            {
-                pauseButton.Text = "Disable";
-                timer1.Start();
-            }
-        }
-
-        private void Form1_Resize(object sender, EventArgs e)
-        {
-            if (FormWindowState.Minimized == this.WindowState)
-                this.Hide();
-        }
-
         private void ToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             Application.Exit();
+        }
+
+        private void notifyIcon1_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                if (timer1.Enabled)
+                {
+                    notifyIcon1.Icon = Properties.Resources.icon_off;
+                    timer1.Stop();
+                }
+                else
+                {
+                    notifyIcon1.Icon = Properties.Resources.icon_on;
+                    timer1.Start();
+                }
+            }
         }
     }
 }
